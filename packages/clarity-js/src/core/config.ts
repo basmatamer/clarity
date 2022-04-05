@@ -1,9 +1,9 @@
-import { Config, Time } from "@clarity-types/core";
+import { Config, LeanMode, Time } from "@clarity-types/core";
 
 let config: Config = {
     projectId: null,
     delay: 1 * Time.Second,
-    lean: false,
+    lean: LeanMode.AllData,
     track: true,
     content: true,
     mask: [],

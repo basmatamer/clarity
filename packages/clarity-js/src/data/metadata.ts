@@ -1,4 +1,4 @@
-import { Time } from "@clarity-types/core";
+import { LeanMode, Time } from "@clarity-types/core";
 import { BooleanFlag, Constant, Dimension, Metadata, MetadataCallback, MetadataCallbackOptions, Metric, Session, User, Setting } from "@clarity-types/data";
 import * as core from "@src/core";
 import config from "@src/core/config";
@@ -27,7 +27,7 @@ export function start(): void {
   }
 
   // Override configuration based on what's in the session storage, unless it is blank (e.g. using upload callback, like in devtools)
-  config.lean = config.track && s.upgrade !== null ? s.upgrade === BooleanFlag.False : config.lean;
+  config.lean = config.track && s.upgrade !== null ? (s.upgrade === BooleanFlag.False ? LeanMode.HeatMapOnly : LeanMode.AllData) : config.lean;
   config.upload = config.track && typeof config.upload === Constant.String && s.upload && s.upload.length > Constant.HTTPS.length ? s.upload : config.upload;
   // Log dimensions
   dimension.log(Dimension.UserAgent, ua);
@@ -90,7 +90,7 @@ export function stop(): void {
 export function metadata(cb: MetadataCallback, wait: boolean = true): void {
   if (data && wait === false) {
     // Immediately invoke the callback if the caller explicitly doesn't want to wait for the upgrade confirmation
-    cb(data, !config.lean);
+    cb(data, config.lean === LeanMode.AllData);
   }
   
   callbacks.push({callback: cb, wait: wait });
@@ -125,7 +125,7 @@ function tab(): string {
 export function save(): void {
   let ts = Math.round(Date.now());
   let upload = config.upload && typeof config.upload === Constant.String ? (config.upload as string).replace(Constant.HTTPS, Constant.Empty) : Constant.Empty;
-  let upgrade = config.lean ? BooleanFlag.False : BooleanFlag.True;
+  let upgrade = config.lean === LeanMode.AllData ? BooleanFlag.True : BooleanFlag.False;
   processCallback(upgrade);
   setCookie(Constant.SessionKey, [data.sessionId, ts, data.pageNum, upgrade, upload].join(Constant.Pipe), Setting.SessionExpire);
 }
@@ -133,7 +133,7 @@ export function save(): void {
 function processCallback(upgrade: BooleanFlag) {
   if (callbacks.length > 0) {
     callbacks.forEach(x => {
-      if (x.callback && (!x.wait || upgrade)) { x.callback(data, !config.lean); }
+      if (x.callback && (!x.wait || upgrade)) { x.callback(data, config.lean === LeanMode.AllData); }
     })
   }
 }

@@ -1,4 +1,4 @@
-import { UploadCallback } from "@clarity-types/core";
+import { LeanMode, UploadCallback } from "@clarity-types/core";
 import { BooleanFlag, Check, Constant, EncodedPayload, Event, Metric, Setting, Token, Transit, UploadData, XMLReadyState } from "@clarity-types/data";
 import * as clarity from "@src/clarity";
 import config from "@src/core/config";
@@ -99,7 +99,7 @@ async function upload(final: boolean = false): Promise<void> {
     // Check if we can send playback bytes over the wire or not
     // For better instrumentation coverage, we send playback bytes from second sequence onwards
     // And, we only send playback metric when we are able to send the playback bytes back to server
-    let sendPlaybackBytes = config.lean === false && playbackBytes > 0 && (playbackBytes < Setting.MaxFirstPayloadBytes || envelope.data.sequence > 0);
+    let sendPlaybackBytes = config.lean === LeanMode.AllData && playbackBytes > 0 && (playbackBytes < Setting.MaxFirstPayloadBytes || envelope.data.sequence > 0);
     if (sendPlaybackBytes) { metric.max(Metric.Playback, BooleanFlag.True); }
 
     // CAUTION: Ensure "transmit" is set to false in the queue function for following events
@@ -237,7 +237,7 @@ function done(sequence: number): void {
 function delay(): number {
     // Progressively increase delay as we continue to send more payloads from the client to the server
     // If we are not uploading data to a server, and instead invoking UploadCallback, in that case keep returning configured value
-    let gap = config.lean === false && discoverBytes > 0 ? Setting.MinUploadDelay : envelope.data.sequence * config.delay;
+    let gap = config.lean === LeanMode.AllData && discoverBytes > 0 ? Setting.MinUploadDelay : envelope.data.sequence * config.delay;
     return typeof config.upload === Constant.String ? Math.max(Math.min(gap, Setting.MaxUploadDelay), Setting.MinUploadDelay) : config.delay;
 }
 

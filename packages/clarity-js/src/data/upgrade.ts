@@ -1,3 +1,4 @@
+import { LeanMode } from "@clarity-types/core";
 import { Constant, Event, UpgradeData } from "@clarity-types/data";
 import * as core from "@src/core";
 import config from "@src/core/config";
@@ -7,7 +8,7 @@ import * as metadata from "@src/data/metadata";
 export let data: UpgradeData = null;
 
 export function start(): void {
-    if (!config.lean && config.upgrade) { config.upgrade(Constant.Config); }
+    if (config.lean === LeanMode.AllData && config.upgrade) { config.upgrade(Constant.Config); }
     data = null;
 }
 
@@ -17,8 +18,8 @@ export function start(): void {
 // and send all backed up layout events to the server.
 export function upgrade(key: string): void {
     // Upgrade only if Clarity was successfully activated on the page
-    if (core.active() && config.lean) {
-        config.lean = false;
+    if (core.active() && config.lean !== LeanMode.AllData) {
+        config.lean = LeanMode.AllData;
         data = { key };
 
         // Update metadata to track we have upgraded this session

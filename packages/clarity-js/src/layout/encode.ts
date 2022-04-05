@@ -1,4 +1,4 @@
-import { Privacy, Task, Timer } from "@clarity-types/core";
+import { LeanMode, Privacy, Task, Timer } from "@clarity-types/core";
 import { Event, Token } from "@clarity-types/data";
 import { Constant, NodeInfo, NodeValue } from "@clarity-types/layout";
 import config from "@src/core/config";
@@ -90,7 +90,7 @@ export default async function (type: Event, timer: Timer = null, ts: number = nu
                     }
                 }
                 if (type === Event.Mutation) { baseline.activity(eventTime); }
-                queue(tokenize(tokens), !config.lean);
+                queue(tokenize(tokens), config.lean === LeanMode.AllData);
             }
             break;
     }

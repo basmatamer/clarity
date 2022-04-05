@@ -119,7 +119,7 @@ export interface Report {
 export interface Config {
     projectId?: string;
     delay?: number;
-    lean?: boolean;
+    lean: LeanMode;
     track?: boolean;
     content?: boolean;
     mask?: string[];
@@ -131,6 +131,12 @@ export interface Config {
     upload?: string | UploadCallback;
     fallback?: string;
     upgrade?: (key: string) => void;
+}
+
+export const enum LeanMode {
+    AllData = 0,
+    HeatMapOnly = 1,
+    PerformanceOnly = 2
 }
 
 export const enum Constant {
